@@ -10,24 +10,16 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import kr.or.ddit.common.model.Page;
+import kr.or.ddit.config.test.RootTestConfig;
 import kr.or.ddit.user.dao.IUserDao;
 import kr.or.ddit.user.model.User;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {
-				"classpath:kr/or/ddit/config/spring/context-root.xml",
-				"classpath:kr/or/ddit/config/spring/context-datasource.xml",
-				"classpath:kr/or/ddit/config/spring/context-transaction.xml"})
-public class UserDaoTest {
+public class UserDaoTest extends RootTestConfig{
 	//userDao를 테스트하기위해 필요한거
 	//db 연결, 트랜잭션, dao
 	private static final Logger logger = LoggerFactory.getLogger(UserDaoTest.class);
@@ -36,12 +28,6 @@ public class UserDaoTest {
 	private IUserDao userDao;
 	
 	private String userId = "testBROWN";
-	
-	@Before
-	public void setup() {
-		userDao.deleteUser(userId);
-	}
-	
 	
 	@Test
 	public void getUserListTest() {
@@ -111,7 +97,7 @@ public class UserDaoTest {
 	public void insertUserTest() throws ParseException {
 		/***Given***/
 		User user = new User();
-		user.setUserId("testBROWN");
+		user.setUserId(userId);
 		user.setUserNm("브라운테스트");
 		user.setAlias("곰테스트");
 		user.setPass("brownTest1234");
@@ -133,7 +119,7 @@ public class UserDaoTest {
 	public void updateUserTest() throws ParseException {
 		/***Given***/
 		insertUserTest();
-		User user = userDao.getUser("testBROWN");
+		User user = userDao.getUser(userId);
 		user.setUserNm("dao수정테스트");
 		
 		/***When***/
