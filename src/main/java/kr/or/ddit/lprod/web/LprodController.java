@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import kr.or.ddit.common.model.Page;
 import kr.or.ddit.lprod.repository.IProdDao;
@@ -74,12 +75,14 @@ public class LprodController {
 	* Method 설명 : 제품 그룹 리스트 - 페이징
 	*/
 	@RequestMapping(path = "lprodPagingList", method = RequestMethod.GET)
-	public String lprodPagingList(Model model, Page page) {
+	public String lprodPagingList(Model model, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "5") int pagesize) {
+//	public String lprodPagingList(Model model, Page page) {
 		
-		page.setUrlChk("lprod");
-		model.addAttribute("pageVo", page);
+		Page p = new Page(page, pagesize);
 		
-		Map<String, Object> resultMap = lprodService.getLprodPagingList(page);
+		model.addAttribute("pageVo", p);
+		
+		Map<String, Object> resultMap = lprodService.getLprodPagingList(p);
 		
 		model.addAllAttributes(resultMap);		//맵객체에 있는 모든 필드들을 한번에 넘겨줌 - 하나하나 처리하지 않아도 손쉽게 처리할수있음 
 		

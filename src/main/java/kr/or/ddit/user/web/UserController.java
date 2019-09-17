@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import kr.or.ddit.common.model.Page;
 import kr.or.ddit.user.service.IUserService;
@@ -75,26 +76,13 @@ public class UserController {
 	
 	
 	@RequestMapping(path = "userPagingList", method = RequestMethod.GET)
-	//public String userPagingList(Model model, int page, int pagesize) {
-	public String userPagingList(Model model, Page page) {
-		
-		/*
-		page = page == null ? 1 : page;
-		pagesize = pagesize == null ? 10 : pagesize;
+	public String userPagingList(Model model, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pagesize) {
+	//public String userPagingList(Model model, Page page) {
 		
 		Page p = new Page(page, pagesize);
-		--> Page.java의 get메소드들에서 삼항연산자,,썻음 */
+		model.addAttribute("pageVo", p);
 		
-		model.addAttribute("pageVo", page);
-		
-		Map<String, Object> resultMap = userService.getUserPagingList(page);
-		 
-		/*
-		List<User> userList = (List<User>) resultMap.get("userList");
-		int paginationSize = (Integer)resultMap.get("paginationSize");		
-		model.addAttribute("userList", userList);
-		model.addAttribute("paginationSize", paginationSize);
-		*/
+		Map<String, Object> resultMap = userService.getUserPagingList(p);
 		
 		model.addAllAttributes(resultMap);		//맵객체에 있는 모든 필드들을 한번에 넘겨줌 - 하나하나 처리하지 않아도 손쉽게 처리할수있음 
 		
