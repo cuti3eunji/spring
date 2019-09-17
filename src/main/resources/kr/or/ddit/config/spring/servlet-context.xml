@@ -8,7 +8,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 	
 	<!-- @Controller 어노테이션이 붙은 클래스만 스캔 -->
-	<context:component-scan base-package="kr.or.ddit" use-default-filters="false">
+	<context:component-scan base-package="kr.or.ddit" use-default-filters="true">
 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 	</context:component-scan>
 	
