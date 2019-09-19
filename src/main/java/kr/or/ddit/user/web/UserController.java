@@ -1,19 +1,31 @@
 package kr.or.ddit.user.web;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import kr.or.ddit.common.model.Page;
+import kr.or.ddit.user.model.User;
+import kr.or.ddit.user.model.UserValidator;
 import kr.or.ddit.user.service.IUserService;
+import kr.or.ddit.util.FileUtil;
+import kr.or.ddit.util.model.FileInfo;
 
 @RequestMapping("user/")
 @Controller
@@ -91,4 +103,146 @@ public class UserController {
 	
 	
 	
+	/**
+	* Method : user
+	* 작성자 : 박은지
+	* 변경이력 :
+	* @param userId
+	* @param model
+	* @return
+	* Method 설명 : 사용자 상세조회
+	*/
+	@RequestMapping("user")
+	public String user(String userId, Model model) {
+		model.addAttribute("user", userService.getUser(userId));
+		return "user/user";
+	}
+	
+	@RequestMapping("userPicture")
+	public void userPicture(String userId, HttpServletResponse response) throws IOException {
+
+		User user = userService.getUser(userId);
+
+		ServletOutputStream sos = response.getOutputStream();
+
+		File picture = new File(user.getRealfilename());
+		FileInputStream fis = new FileInputStream(picture);
+
+		byte[] buff = new byte[512];
+		int len = 0;
+
+		while ((len = fis.read(buff, 0, 512)) != -1) {
+			sos.write(buff, 0, len);
+		}
+
+		fis.close();
+	}
+	
+	
+	/**
+	* Method : userFormView
+	* 작성자 : 박은지
+	* 변경이력 :
+	* @return
+	* Method 설명 : 사용자 등록 화면 요청
+	*/
+	@RequestMapping(path = "userForm", method = RequestMethod.GET)
+	public String userFormView() {
+		return "user/userForm";
+	}
+
+	// 사용자 등록 요청
+	@RequestMapping(path = "userForm", method = RequestMethod.POST)
+	public String userForm(User user, BindingResult result, @RequestPart("picture") MultipartFile picture) {
+
+		new UserValidator().validate(user, result);
+
+		if (result.hasErrors())
+			return "user/userForm";
+		else {
+			FileInfo fileInfo = FileUtil.getFileInfo(picture.getOriginalFilename());
+
+			// 첨부된 파일이 있을 경우만 업로드처리
+			if (picture.getSize() > 0) {
+				try {
+					picture.transferTo(fileInfo.getFile());
+					user.setFilename(fileInfo.getOriginalFileName());// originalFilename
+					user.setRealfilename(fileInfo.getFile().getPath());
+				} catch (IllegalStateException | IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+			int insertCnt = userService.insertUser(user);
+
+			if (insertCnt == 1)
+				return "redirect:/user/user?userId=" + user.getUserId();
+			else
+				return "user/userForm";
+		}
+	}
+	
+	
+	
+	
+	/**
+	* Method : userModifyView
+	* 작성자 : 박은지
+	* 변경이력 :
+	* @param userId
+	* @param model
+	* @return
+	* Method 설명 : 사용자 수정화면
+	*/
+	@RequestMapping(path = "userModify", method = RequestMethod.GET)
+	public String userModifyView(String userId, Model model) {
+		model.addAttribute("user", userService.getUser(userId));
+		return "user/userModify";
+	}
+
+	@RequestMapping(path = "userModify", method = RequestMethod.POST)
+	public String userModify(User user, BindingResult result, Model model,
+			@RequestPart("picture") MultipartFile picture) {
+
+		new UserValidator().validate(user, result);
+
+		if (result.hasErrors())
+			return userModifyView(user.getUserId(), model);
+		else {
+			FileInfo fileInfo = FileUtil.getFileInfo(picture.getOriginalFilename());
+			// 첨부된 파일이 있을 경우만 업로드처리
+			if (picture.getSize() > 0) {
+				try {
+
+					// 기존 파일은 삭제한다
+					User orgUser = userService.getUser(user.getUserId());
+					
+					if(orgUser.getRealfilename() != null) {
+						File file = new File(orgUser.getRealfilename());
+						file.delete();
+					}
+
+					picture.transferTo(fileInfo.getFile());
+					user.setFilename(fileInfo.getOriginalFileName());// originalFilename
+					user.setRealfilename(fileInfo.getFile().getPath());
+
+				} catch (IllegalStateException | IOException e) {
+					e.printStackTrace();
+				}
+			}else {
+				User getUser = userService.getUser(user.getUserId());
+				
+				user.setFilename(getUser.getFilename());
+				user.setRealfilename(getUser.getRealfilename());
+			}
+
+			int updateCnt = userService.updateUser(user);
+
+			if (updateCnt == 1)
+				return "redirect:/user/user?userId=" + user.getUserId();
+			else
+				return userModifyView(user.getUserId(), model);
+		}
+
+	}
 }
