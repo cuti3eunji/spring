@@ -245,4 +245,43 @@ public class UserController {
 		}
 
 	}
+	
+	@RequestMapping(path = "userPagingListAjaxView")
+	public String userPagingListAjaxView() {
+		return "user/userPagingListAjaxView";
+	}
+	
+	@RequestMapping(path = "userPagingListAjax", method = RequestMethod.GET)
+	public String userPagingListAjax(Model model, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pagesize) {
+		
+		Page p = new Page(page, pagesize);
+		model.addAttribute("pageVo", p);
+		
+		Map<String, Object> resultMap = userService.getUserPagingList(p);
+		
+		model.addAllAttributes(resultMap);		//맵객체에 있는 모든 필드들을 한번에 넘겨줌 - 하나하나 처리하지 않아도 손쉽게 처리할수있음 
+		
+		return "jsonView";
+	}
+	
+	/**
+	* Method : userPagingListHtmlAjax
+	* 작성자 : SEM-PC
+	* 변경이력 :
+	* @return
+	* Method 설명 : 사용자 페이징 리스트의 결과를 html로 생성한다 (jsp)
+	*/
+	@RequestMapping("userPagingListHtmlAjax")
+	public String userPagingListHtmlAjax(@RequestParam(defaultValue = "1") int page,
+										 @RequestParam(defaultValue = "10") int pagesize,
+										 Model model) {
+		
+		Page pageVo = new Page(page, pagesize);
+		Map<String, Object> resultMap = userService.getUserPagingList(pageVo);
+		model.addAllAttributes(resultMap);
+		model.addAttribute("pageVo", pageVo);
+		
+		return "user/userPagingListHtmlAjax";
+	}
+	
 }
