@@ -100,7 +100,17 @@ public class UserController {
 		
 		model.addAllAttributes(resultMap);		//맵객체에 있는 모든 필드들을 한번에 넘겨줌 - 하나하나 처리하지 않아도 손쉽게 처리할수있음 
 		
-		return "user/userPagingList";
+		//return "user/userPagingList"; 	//internalResourceViewResolver를 통한 응답
+		return "tiles.userPagingList";		
+		
+		//viewResolver order에 따라
+		/* 1. tilesViewResolver가 tiles definition 파일 중에 
+		 *	  viewName과 일치하는 definition 이름을 검색
+		 *	  1-1. 검색이 될 경우 해당 definition을 이용하여 응답 생성
+		 *	  1-2. 검색이 안 될 경우 다음 우선순위를 갖는 viewResolver가 처리
+		 * 2. beanNameViewResolver
+		 * 3. internalResourceViewResolver  //internal어쩌구를 우선순위 젤 마지막에 둬야함
+		 */
 	}
 	
 	
@@ -117,7 +127,8 @@ public class UserController {
 	@RequestMapping("user")
 	public String user(String userId, Model model) {
 		model.addAttribute("user", userService.getUser(userId));
-		return "user/user";
+		//return "user/user";
+		return "tiles.user";
 	}
 	
 	@RequestMapping("userPicture")
